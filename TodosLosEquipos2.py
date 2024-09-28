@@ -20,7 +20,7 @@ benjamina="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/benjamina.pd
 benjaminb="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/benjaminb.pdf"
 prebenjamin="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/prebenja.pdf"
 
-
+#Diccionario de equipos
 def diccionarioEquipos(valor):
     diccionario_equipos={'':['','','',''],
         'U.D. Gijon Industrial':['SANTA CRUZ','Gijón','H.Sintética','Campo'],
