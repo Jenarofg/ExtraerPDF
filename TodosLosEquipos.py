@@ -2,22 +2,25 @@ import PyPDF2
 import pandas as pd
 import calendar
 import locale
+from datetime import date
+import sqlite3
+
 
 
 locale.setlocale(locale.LC_TIME,'es_ES')
 
-femenino="/Users/jenarofg/Python/ExtraerPDF/femenino.pdf"
-juvenil="/Users/jenarofg/Python/ExtraerPDF/juvenil.pdf"
-cadete="/Users/jenarofg/Python/ExtraerPDF/cadete.pdf"
-infantila="/Users/jenarofg/Python/ExtraerPDF/infantila.pdf"
-infantilb="/Users/jenarofg/Python/ExtraerPDF/infantilb.pdf"
-alevina="/Users/jenarofg/Python/ExtraerPDF/alevina.pdf"
-alevinb="/Users/jenarofg/Python/ExtraerPDF/alevinb.pdf"
-benjamina="/Users/jenarofg/Python/ExtraerPDF/benjamina.pdf"
-benjaminb="/Users/jenarofg/Python/ExtraesrPDF/benjaminb.pdf"
-prebenjamin="/Users/jenarofg/Python/ExtraerPDF/prebenjamin.pdf"
-#Buenas
-#DEFINICION DE DICCIONARIO CON EQUIPOS 
+femenino="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/femenino.pdf"
+juvenil="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/juvenil.pdf"
+cadete="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/cadete.pdf"
+infantila="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/infantila.pdf"
+infantilb="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/infantilb.pdf"
+alevina="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/alevina.pdf"
+alevinb="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/alevinb.pdf"
+benjamina="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/benjamina.pdf"
+benjaminb="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/benjaminb.pdf"
+prebenjamin="/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/Calendarios/prebenja.pdf"
+
+#Diccionario de equipos
 def diccionarioEquipos(valor):
     diccionario_equipos={'':['','','',''],
         'U.D. Gijon Industrial':['SANTA CRUZ','Gijón','H.Sintética','Campo'],
@@ -48,7 +51,7 @@ def diccionarioEquipos(valor):
         'Peña C.D. Hermanos Castro':['MAXIMINO MARTÍNEZ Nº2','Gijón','H.Sintética','Campo'],
         'C.F. Estudiantes':['NUEVO SAN JULIAN','Gijón','H.Natural','Campo'],
         'Fabril C.D.':['SANTA CRUZ','Gijón','H.Sintética','Futbol8'],
-        'C.D. Arenal ':['EL TRAGAMON 2','Gijón','H.Sintética','Campo'],
+        'C.D. Arenal':['EL TRAGAMON 2','Gijón','H.Sintética','Campo'],
         'Cimadevilla C.F.':['POLIDEPORTIVO NATAHOYO','Gijón','H.Sintética','Campo'],
         'Real Avilés Industrial C.F. SAD':['campo','Avilés','H.Sintética','Campo'],
         'Rayo Gijonés':['campoMAXIMINO MARTÍNEZ Nº1','Gijón','H.Sintética','Campo'],
@@ -58,24 +61,40 @@ def diccionarioEquipos(valor):
         'Deportiva Piloñesa':['LA COVIELLA','Villamayor','H.Natural','Campo'],
         'L''Entregu C.F.':['NUEVO NALON','San Martin del Rey Aurelio','H.Sintética','Campo'],
         'C.D. Llanes':['LA ENCARNACION','Llanes','H.Sintética','Campo'],
-        'Fortuna C.F.':['MUNICIPAL ARRIONDAS','Parres','H.Sintética','Campo']}
+        'Fortuna C.F.':['MUNICIPAL ARRIONDAS','Parres','H.Sintética','Campo'],
+        'S.D. Cancienes':['POLIDEPORTIVO CANCIENES','Corvera','Pista','Pista']}
     if valor in diccionario_equipos:
         return diccionario_equipos[valor]
     else:
         return diccionarioEquipos('')
-
-#FUNCION QUE RECIBE UN TEXTO Y AÑADA A LAS LISTAS PASADAS LOS VALORES CORRESPONDIENTES
-def separarfecha(fecha,dia,mes):
+    
+def separarfecha(fecha,dia,mes,fecha_objeto):
     for fechas in fecha:
         fechaseparada=fechas.split('-')
         #mesnom=calendar.month_name(int(fechaseparada[1]))
         #print(calendar.month_name[2])
+        fecha_objeto.append(date(int(fechaseparada[2]),int(fechaseparada[1]),int(fechaseparada[0])))
         dia.append(fechaseparada[0])
         mes.append(calendar.month_name[int(fechaseparada[1])])
 
+def selecVictoria(categoria,campo,ciudad,tcesped):
+    selVictoria={'FEMENINO':['PERLORA','PERLORA','H.NATURAL'],
+                 'JUVENIL':['ANEXO LA MATA','CANDÁS','H.NATURAL'],
+                 'CADETE':['PERLORA','PERLORA','H.NATURAL'],
+                 'INFANTIL A':['PERLORA','PERLORA','H.NATURAL'],
+                 'INFANTIL B':['PERLORA','PERLORA','H.NATURAL'],
+                 'ALEVIN A':['ANEXO LA MATA','CANDÁS','H.SINTETICA'],
+                 'ALEVIN B':['ANEXO LA MATA','CANDÁS','H.SINTETICA'],
+                 'BENJAMIN A':['POLIDEPORTIVO CANDÁS','CANDÁS','PISTA'],
+                 'BENJAMIN B':['POLIDEPORTIVO CANDÁS','CANDÁS','PISTA'],
+                 'PREBENJAMIN':['POLIDEPORTIVO CANDÁS','CANDÁS','PISTA']}
+    
+    campo.append(selVictoria[categoria][0])
+    ciudad.append(selVictoria[categoria][1])
+    tcesped.append(selVictoria[categoria][2])
 
-def principal(equipo,categoria):
-    ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes=[],[],[],[],[],[],[],[],[]
+
+def principal(equipo,categoria,ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes):
     with open(equipo,"rb") as archivo:
         lector_pdf=PyPDF2.PdfReader(archivo)
         numeroPag=len(lector_pdf.pages)
@@ -94,9 +113,7 @@ def principal(equipo,categoria):
                 if "Club Victoria" in line:
                     partes=line.split("-")
                     if "Club Victoria" in partes[0]:
-                        campo.append("Perlora")
-                        ciudad.append("Perlora")
-                        tcesped.append("H.Natural")
+                        selecVictoria(categoria,campo,ciudad,tcesped)
                     else:
                         visit=partes[0]
                         posicionComilla=visit.find('"')
@@ -119,31 +136,87 @@ def principal(equipo,categoria):
                         lvisitante.append(categoria)
                     else:
                         lvisitante.append(partes[1])
-    separarfecha(lfechas,ldia,lmes)
-    lmesmayus=[elemento.upper() for elemento in lmes]
-    llocalmayus=[elemento.upper() for elemento in llocal]
-    lvisitantemayus=[elemento.upper() for elemento in lvisitante]
-    df=pd.DataFrame()
-    df['Jornada']=ljornadas
-    df['Dia']=ldia
-    df['Mes']=lmesmayus
-    df['Local']=llocal
-    df['Visitante']=lvisitante
-    df['Campo']=campo
-    df['Ciudad']=ciudad
-    df['Tipo de cesped']=tcesped
-    df_ordenado=df.sort_values(by='Jornada')
     
-    print(df_ordenado)
+
+ljornadas,lfechas,llocal,fecha_objeto,lvisitante,campo,ciudad,tcesped,ldia,lmes=[],[],[],[],[],[],[],[],[],[]
+principal(cadete,"CADETE",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(juvenil,"JUVENIL",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(infantila,"INFANTIL A",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(infantilb,"INFANTIL B",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(alevina,"ALEVIN A",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(alevinb,"ALEVIN B",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(benjamina,"BENJAMIN A",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(benjaminb,"BENJAMIN B",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+principal(prebenjamin,"PREBENJAMIN",ljornadas,lfechas,llocal,lvisitante,campo,ciudad,tcesped,ldia,lmes)
+separarfecha(lfechas,ldia,lmes,fecha_objeto)
+llocal=[elemento.upper() for elemento in llocal]
+lvisitante=[elemento.upper() for elemento in lvisitante]
+lmesmayus=[elemento.upper() for elemento in lmes]
+llocalmayus=[elemento.upper() for elemento in llocal]
+lvisitantemayus=[elemento.upper() for elemento in lvisitante]
+campo= [elemento.upper() for elemento in campo]
+ciudad=[elemento.upper() for elemento in ciudad]
+tcesped=[elemento.upper() for elemento in tcesped]
+
+df=pd.DataFrame()
+df['Jornada']=ljornadas
+df['Fecha']=fecha_objeto
+df['Dia']=ldia
+df['Mes']=lmesmayus
+df['Local']=llocal
+df['Visitante']=lvisitante
+df['Campo']=campo
+df['Ciudad']=ciudad
+df['Tipo de cesped']=tcesped
 
 
-principal(cadete,"CADETE")
-principal(femenino,"FEMENINO")
-principal(juvenil,"JUVENIL")
-principal(infantila,"INFANTIL A")
-principal(infantilb,"INFANTIL B")
-principal(alevina,"ALEVIN A")
-principal(alevinb,"ALEVIN B")
-principal(benjamina,"BENJAMIN A")
+#PRUEBA BASE DE DATOS
 
+class PartidosDB:
+    def __init__(self, ljornadas, fecha_objeto, ldia, lmesmayus, llocal, lvisitante, campo, ciudad, tcesped):
+        self.df = pd.DataFrame({
+            'Jornada': ljornadas,
+            'Fecha': fecha_objeto,
+            'Dia': ldia,
+            'Mes': lmesmayus,
+            'Local': llocal,
+            'Visitante': lvisitante,
+            'Campo': campo,
+            'Ciudad': ciudad,
+            'Tipo de cesped': tcesped
+        })
+    
+    def guardar_en_sqlite(self, nombre_bd='mi_base_de_datos.sqlite', nombre_tabla='partidos'):
+        # Conectar a la base de datos SQLite (o crearla si no existe)
+        conexion = sqlite3.connect(nombre_bd)
+        
+        # Escribir el DataFrame en una tabla
+        self.df.to_sql(nombre_tabla, conexion, if_exists='replace', index=False)
+        
+        # Cerrar la conexión
+        conexion.close()
+
+# Crear una instancia de la clase y guardar los datos en SQLite
+partidos_db = PartidosDB(ljornadas, fecha_objeto, ldia, lmesmayus, llocal, lvisitante, campo, ciudad, tcesped)
+partidos_db.guardar_en_sqlite("/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/bdpartidos.sqlite","partidos")
+print("Calendario guardado en bdpartidos.sqlite")
+    
+
+
+#Se ordena por fecha de partido
+#df_ordenado=df.sort_values(by='Fecha')
+#print(df_ordenado)
+#Filtor para obtener solo los partidos como local.
+#filtro = df_ordenado[df_ordenado['Local'].isin(['CADETE', 'JUVENIL','INFANTIL A','INFANTIL B','ALEVIN A','ALEVIN B','BENJAMIN A','BENJAMIN B','PREBENJAMIN'])]
+#print(filtro)
+print(df)
+
+
+# Aplicar el estilo al DataFrame
+#df_styled=filtro.style.set_properties(**{"border": "2px solid blue", "color": "black"})
+
+# Guardar el DataFrame estilizado en un archivo HTML
+#df_styled.to_html('/Users/jenarofg/Python/ExtraerPDF/styled_dataframe.html')
+
+#filtro.to_csv('/Users/jenarofg/Python/ExtraerPDF/TodosCasa.csv', index=False)
 
