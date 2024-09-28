@@ -198,7 +198,7 @@ class PartidosDB:
 
 # Crear una instancia de la clase y guardar los datos en SQLite
 partidos_db = PartidosDB(ljornadas, fecha_objeto, ldia, lmesmayus, llocal, lvisitante, campo, ciudad, tcesped)
-partidos_db.guardar_en_sqlite("/Users/jenarofg/Python/ExtraerPDF/bdpartidos.sqlite","partidos")
+partidos_db.guardar_en_sqlite("/Users/jenarofg/Python/ExtraerPDF/ExtraerPDF/bdpartidos.sqlite","partidos")
 print("Calendario guardado en bdpartidos.sqlite")
     
 
